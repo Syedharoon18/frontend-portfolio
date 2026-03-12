@@ -9,15 +9,15 @@ const ResumeView = () => {
     const [resumeExists, setResumeExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const [resumeUrl, setResumeUrl] = useState('');
+    const [resume, setResume] = useState(null);
 
     useEffect(() => {
         // Check if resume link exists in database
         const fetchResume = async () => {
             try {
                 const response = await api.get('/upload/resume');
-                if (response.data && response.data.resumeUrl) {
-                    setResumeUrl(response.data.resumeUrl);
+                if (response.data) {
+                    setResume(response.data);
                     setResumeExists(true);
                 }
             } catch (err) {
@@ -34,13 +34,18 @@ const ResumeView = () => {
         setIsDownloading(true);
 
         try {
-            const link = document.createElement("a");
-            link.href = "/Syed_Haroon_Resume.pdf";
-            link.download = "Syed_Haroon_Resume.pdf";
+            if (!resume || !resume.resumeUrl) {
+                alert('No resume available to download');
+                return;
+            }
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            let downloadLink = resume.resumeUrl;
+            // If it's a Cloudinary URL, add fl_attachment to force download
+            if (downloadLink.includes('cloudinary.com') && !downloadLink.includes('fl_attachment')) {
+                downloadLink += (downloadLink.includes('?') ? '&' : '?') + 'fl_attachment';
+            }
+
+            window.open(downloadLink, '_blank');
 
             setDownloadSuccess(true);
             setTimeout(() => setDownloadSuccess(false), 3000);
@@ -108,7 +113,7 @@ const ResumeView = () => {
                                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
                                     Interactive <span className="text-cyan-400">Resume</span>
                                 </h1>
-                                <p className="text-xs text-slate-400 hidden lg:block">Syed Haroon M • Java Developer</p>
+                                <p className="text-xs text-slate-400 hidden lg:block">{resume?.name || 'Syed Haroon M'} • {resume?.title || 'Java Developer'}</p>
                             </div>
                         </div>
 
@@ -164,9 +169,9 @@ const ResumeView = () => {
                             <div className="relative pl-6 border-l-2 border-slate-700 space-y-8">
                                 <div className="relative">
                                     <div className="absolute -left-[31px] top-1.5 h-4 w-4 rounded-full bg-cyan-400 border-4 border-[#0f172a]"></div>
-                                    <h3 className="text-xl font-bold text-white">Java Trainee</h3>
-                                    <p className="text-cyan-400 font-medium mb-2">T-machine software solution, Chennai</p>
-                                    <p className="text-sm text-slate-400 mb-3 bg-slate-800/50 inline-block px-3 py-1 rounded-full border border-slate-700">Feb 2025 - May 2025</p>
+                                    <h3 className="text-xl font-bold text-white">{resume?.internship ? resume.internship.split('\n')[0] : 'Java Trainee'}</h3>
+                                    <p className="text-cyan-400 font-medium mb-2">{resume?.internship ? resume.internship.split('\n')[1] || '' : 'T-machine software solution, Chennai'}</p>
+                                    <p className="text-sm text-slate-400 mb-3 bg-slate-800/50 inline-block px-3 py-1 rounded-full border border-slate-700">{resume?.internship ? (resume.internship.split('\n').slice(2).join(' ') || '') : 'Feb 2025 - May 2025'}</p>
                                 </div>
                             </div>
                         </div>
@@ -184,9 +189,9 @@ const ResumeView = () => {
                                 {/* College */}
                                 <div className="relative">
                                     <div className="absolute -left-[31px] top-1.5 h-4 w-4 rounded-full bg-emerald-400 border-4 border-[#0f172a]"></div>
-                                    <h3 className="text-xl font-bold text-white">Bachelor of Technology</h3>
-                                    <p className="text-emerald-400 font-medium mb-2">Kalasalingam Academy of Research and Education, Srivilliputhur, India</p>
-                                    <p className="text-sm text-slate-400 mb-3 bg-slate-800/50 inline-block px-3 py-1 rounded-full border border-slate-700">2020 - 2024</p>
+                                    <h3 className="text-xl font-bold text-white">{resume?.education ? resume.education.split('\n')[0] : 'Bachelor of Technology'}</h3>
+                                    <p className="text-emerald-400 font-medium mb-2">{resume?.education ? resume.education.split('\n')[1] || '' : 'Kalasalingam Academy of Research and Education, Srivilliputhur, India'}</p>
+                                    <p className="text-sm text-slate-400 mb-3 bg-slate-800/50 inline-block px-3 py-1 rounded-full border border-slate-700">{resume?.education ? (resume.education.split('\n').slice(2).join(' ') || '') : '2020 - 2024'}</p>
                                     <ul className="text-slate-300 leading-relaxed text-sm list-disc pl-4 space-y-1">
                                         <li>Major in Electronics and Communication Engineering</li>
                                         <li>Created multiple projects and participated at various hackathons and many workshops.</li>
@@ -226,7 +231,7 @@ const ResumeView = () => {
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
                                         <span className="font-bold text-white">Programming Language</span>
-                                        <span className="text-sm text-slate-400">JAVA</span>
+                                        <span className="text-sm text-slate-400">{resume?.skills ? resume.skills.split(',')[0] : 'JAVA'}</span>
                                     </div>
                                     <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                                         <div className="h-full bg-gradient-to-r from-purple-600 to-cyan-400 rounded-full" style={{ width: '90%' }}></div>
@@ -237,7 +242,7 @@ const ResumeView = () => {
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
                                         <span className="font-bold text-white">Frameworks</span>
-                                        <span className="text-sm text-slate-400">Spring boot</span>
+                                        <span className="text-sm text-slate-400">{resume?.skills ? resume.skills.split(',')[1] || 'Spring boot' : 'Spring boot'}</span>
                                     </div>
                                     <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                                         <div className="h-full bg-gradient-to-r from-purple-600 to-cyan-400 rounded-full" style={{ width: '85%' }}></div>

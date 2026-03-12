@@ -47,6 +47,13 @@ const Admin = () => {
     // Resume upload
     const [resumeFile, setResumeFile] = useState(null);
     const [resumeUploading, setResumeUploading] = useState(false);
+    const [resumeMeta, setResumeMeta] = useState({
+        name: '',
+        title: '',
+        education: '',
+        internship: '',
+        skills: ''
+    });
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -152,9 +159,11 @@ const Admin = () => {
 
         if (uploadedUrl) {
             try {
-                await api.post('/upload/resume', { resumeUrl: uploadedUrl });
+                // Send resume URL plus optional metadata to backend
+                await api.post('/upload/resume', { resumeUrl: uploadedUrl, ...resumeMeta });
                 alert('Resume successfully uploaded and linked to your portfolio!');
                 setResumeFile(null);
+                setResumeMeta({ name: '', title: '', education: '', internship: '', skills: '' });
             } catch (err) {
                 console.error('Failed to link resume to backend:', err);
                 alert('File uploaded to cloud but failed to save in database. Links might break on restart.');
@@ -320,6 +329,41 @@ const Admin = () => {
                                 accept=".pdf"
                                 onChange={(e) => handleFileChange(e, setResumeFile)}
                                 className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-800 file:text-emerald-400 hover:file:bg-slate-700 cursor-pointer"
+                            />
+                            <input
+                                type="text"
+                                value={resumeMeta.name}
+                                onChange={(e) => setResumeMeta({ ...resumeMeta, name: e.target.value })}
+                                placeholder="Full name (optional)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-cyan-500 outline-none"
+                            />
+                            <input
+                                type="text"
+                                value={resumeMeta.title}
+                                onChange={(e) => setResumeMeta({ ...resumeMeta, title: e.target.value })}
+                                placeholder="Title / Headline (optional)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-cyan-500 outline-none"
+                            />
+                            <textarea
+                                rows={3}
+                                value={resumeMeta.education}
+                                onChange={(e) => setResumeMeta({ ...resumeMeta, education: e.target.value })}
+                                placeholder="Education (optional)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-cyan-500 outline-none resize-none"
+                            />
+                            <textarea
+                                rows={3}
+                                value={resumeMeta.internship}
+                                onChange={(e) => setResumeMeta({ ...resumeMeta, internship: e.target.value })}
+                                placeholder="Internship / Experience (optional)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-cyan-500 outline-none resize-none"
+                            />
+                            <textarea
+                                rows={2}
+                                value={resumeMeta.skills}
+                                onChange={(e) => setResumeMeta({ ...resumeMeta, skills: e.target.value })}
+                                placeholder="Skills (comma separated, optional)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-cyan-500 outline-none resize-none"
                             />
                             <button
                                 onClick={handleResumeUpload}
